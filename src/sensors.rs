@@ -34,8 +34,8 @@ enum DhtSensorDef {
 
 const fn min_update_interval(sensor: &DhtSensor) -> u64 {
     match sensor {
-        Sensor::Dht11 => 1,
-        Sensor::Dht22 => 2
+        DhtSensor::Dht11 => 1,
+        DhtSensor::Dht22 => 2
     }
 }
 
