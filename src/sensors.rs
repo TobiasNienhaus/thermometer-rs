@@ -24,14 +24,14 @@ impl SensorCollection {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(remote = "DhtSensor")]
 enum DhtSensorDef {
     Dht11,
     Dht22
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Sensor {
     #[serde(with = "DhtSensorDef")]
     sensor: DhtSensor,
