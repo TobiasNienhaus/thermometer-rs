@@ -3,7 +3,9 @@ name = "thermometer-rs"
 version = "0.1.0"
 authors = ["Tobias Nienhaus <me@tobiasnienhaus.me>"]
 edition = "2018"
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+dht_lib = { git = "https://github.com/TobiasNienhaus/dht22_pi.git", package = "dht11-22_pi" }
