@@ -18,7 +18,7 @@ fn main() {
             eprintln!("Could not read data: {:?}", e);
             reading = read(DhtSensor::Dht11, PIN);
         }
-        println!("Read data: Temperature {}C Humidity {}%", r.temperature, r.humidity);
+        println!("Read data: Temperature {}C Humidity {}%", reading.temperature, reading.humidity);
         std::thread::sleep(Duration::from_secs(4));
     }
 }
