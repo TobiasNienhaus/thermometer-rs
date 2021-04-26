@@ -17,6 +17,7 @@ impl SensorCollection {
                 Sensor {
                     sensor: DhtSensor::Dht11,
                     pin: i,
+                    update_interval: None,
                     description: None
                 }
             }).collect()
@@ -36,6 +37,8 @@ pub struct Sensor {
     #[serde(with = "DhtSensorDef")]
     sensor: DhtSensor,
     pin: u8,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    update_interval: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     description: Option<String>
 }
