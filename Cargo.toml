@@ -9,3 +9,5 @@ publish = false
 
 [dependencies]
 dht_lib = { git = "https://github.com/TobiasNienhaus/dht22_pi.git", package = "dht11-22_pi" }
+serde = { version = "1.0.125", features = ["derive"] }
+serde_yaml = "0.8.17"
