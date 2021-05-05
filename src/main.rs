@@ -30,7 +30,7 @@ fn main() {
     std::process::Command::new("raspistill").args([
         "-o",
         "~/Desktop/test2.jpg"
-    ]).output().unwrap();
+    ].iter()).output().unwrap();
     return;
 
     loop {
