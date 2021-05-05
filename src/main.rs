@@ -30,14 +30,20 @@ fn main() {
         }
         // TODO don't unwrap
         let elapsed = now.elapsed();
+        println!("Elapsed {} ms", elapsed.as_millis());
         let to_subtract = Duration::from_secs(conf.min_read_time()).checked_sub(elapsed);
+        println!("To subtract: {:?} ms", to_subtract.map(|s| s.as_millis()));
 
         let to_wait = match to_subtract {
             None => Some(Duration::from_secs(conf.read_interval())),
             Some(t) => Duration::from_secs(conf.read_interval()).checked_sub(t),
         };
+        println!("To wait: {:?} ms", to_wait.map(|s| s.as_millis()));
         match to_wait {
-            Some(t) => std::thread::sleep(t),
+            Some(t) => {
+                println!("Sleeping {} ms", t.as_millis());
+                std::thread::sleep(t)
+            },
             _ => {}
         }
     }
