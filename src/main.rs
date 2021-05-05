@@ -26,6 +26,11 @@ fn main() {
     for line in s.lines() {
         println!("{}", line);
     }
+
+    std::process::Command::new("raspistill").args([
+        "-o",
+        "~/Desktop/test2.jpg"
+    ]).output().unwrap();
     return;
 
     loop {

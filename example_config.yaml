@@ -1,1 +1,9 @@
-
+---
+read_interval: 1
+sensors:
+  - sensor: Dht11
+    pin: 4
+    description: A
+  - sensor: Dht22
+    pin: 4
+    description: B
