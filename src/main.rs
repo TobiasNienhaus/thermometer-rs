@@ -7,7 +7,9 @@ use std::path::PathBuf;
 use std::fs::OpenOptions;
 use std::io::Read;
 
-const TEST_PIN: u8 = 4;
+const TEST_PIN1: u8 = 4;
+const TEST_PIN2: u8 = 17;
+const TEST_PIN3: u8 = 27;
 
 fn main() {
     // let path: PathBuf = "~/Dokumente/thermometer-config.yaml".into();
@@ -20,7 +22,9 @@ fn main() {
 
     // let conf = read_conf;
     let conf = sensors::SensorConfig::build(vec![
-        sensors::Sensor::named_dht_22(TEST_PIN, "TEST"),
+        sensors::Sensor::named_dht_22(TEST_PIN1, "TEST --- A"),
+        sensors::Sensor::named_dht_22(TEST_PIN2, "TEST --- B"),
+        sensors::Sensor::named_dht_22(TEST_PIN3, "TEST --- C"),
     ], 1);
     let s = serde_yaml::to_string(&conf).unwrap();
     for line in s.lines() {
@@ -37,8 +41,8 @@ fn main() {
         let now = std::time::Instant::now();
         for sensor in conf.sensors() {
             match sensor.description() {
-                Some(s) => println!("Reading sensor {}", s),
-                None => println!("Reading sensor on pin {}", sensor.pin())
+                Some(s) => bunt::println!("Reading sensor {[yellow]}", s),
+                None => bunt::println!("Reading sensor on pin {[yellow]}", sensor.pin())
             }
             let reading = sensor.read();
             match reading {
@@ -46,20 +50,14 @@ fn main() {
                 Ok(o) => bunt::println!("Reading: t: {[green]} h: {[green]}", o.temperature, o.humidity),
             }
         }
-        // TODO don't unwrap
-        let elapsed = now.elapsed();
-        println!("Elapsed {} ms", elapsed.as_millis());
-        let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(elapsed);
-        println!("To subtract: {:?} ms", to_add.map(|s| s.as_millis()));
+        let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(now.elapsed());
 
         let to_wait = match to_add {
             None => Some(Duration::from_secs(conf.read_interval())),
             Some(t) => Duration::from_secs(conf.read_interval()).checked_add(t),
         };
-        println!("To wait: {:?} ms", to_wait.map(|s| s.as_millis()));
         match to_wait {
             Some(t) => {
-                println!("Sleeping {} ms", t.as_millis());
                 std::thread::sleep(t)
             },
             _ => {}
