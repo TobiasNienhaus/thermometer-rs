@@ -8,7 +8,7 @@ const TEST_PIN: u8 = 4;
 
 fn main() {
     let conf = sensors::SensorConfig::build(vec![
-        sensors::Sensor::dht_11(TEST_PIN),
+        sensors::Sensor::named_dht_11(TEST_PIN, "TEST"),
     ], 1);
     let s = serde_yaml::to_string(&conf).unwrap();
     for line in s.lines() {

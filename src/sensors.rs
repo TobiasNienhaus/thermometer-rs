@@ -74,6 +74,22 @@ impl Sensor {
         }
     }
 
+    pub fn named_dht_11(pin: u8, name: &str) -> Sensor {
+        Sensor {
+            sensor: DhtSensor::Dht11,
+            pin,
+            description: Some(name.to_owned())
+        }
+    }
+
+    pub fn named_dht_22(pin: u8, name: &str) -> Sensor {
+        Sensor {
+            sensor: DhtSensor::Dht22,
+            pin,
+            description: Some(name.to_owned())
+        }
+    }
+
     pub fn sensor(&self) -> &DhtSensor {
         &self.sensor
     }
