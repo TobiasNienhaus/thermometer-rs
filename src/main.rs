@@ -16,7 +16,7 @@ fn main() {
     }
 
     loop {
-        let now = std::time::SystemTime::now();
+        let now = std::time::Instant::now();
         for sensor in conf.sensors() {
             match sensor.description() {
                 Some(s) => println!("Reading sensor {}", s),
@@ -29,7 +29,7 @@ fn main() {
             }
         }
         // TODO don't unwrap
-        let elapsed = now.elapsed().unwrap();
+        let elapsed = now.elapsed();
         let to_subtract = Duration::from_secs(conf.min_read_time()).checked_sub(elapsed);
 
         let to_wait = match to_subtract {
