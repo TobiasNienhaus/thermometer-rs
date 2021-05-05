@@ -16,6 +16,7 @@ fn main() {
     }
 
     loop {
+        let now = std::time::SystemTime::now();
         for sensor in conf.sensors() {
             match sensor.description() {
                 Some(s) => println!("Reading sensor {}", s),
@@ -27,8 +28,18 @@ fn main() {
                 Ok(o) => println!("Reading: t: {} h: {}", o.temperature, o.humidity),
             }
         }
+        // TODO don't unwrap
+        let elapsed = now.elapsed().unwrap();
+        let to_subtract = Duration::from_secs(conf.min_read_time()).checked_sub(elapsed);
 
-        std::thread::sleep(Duration::from_secs(conf.read_interval() - conf.min_read_time()));
+        let to_wait = match to_subtract {
+            None => Some(Duration::from_secs(conf.read_interval())),
+            Some(t) => Duration::from_secs(conf.read_interval()).checked_sub(t),
+        };
+        match to_wait {
+            Some(t) => std::thread::sleep(t),
+            _ => {}
+        }
     }
     // loop {
     //     let mut reading = read(DhtSensor::Dht11, PIN);
