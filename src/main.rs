@@ -19,7 +19,7 @@ fn main() {
         for sensor in conf.sensors() {
             match sensor.description() {
                 Some(s) => println!("Reading sensor {}", s),
-                None => pritnln!("Reading sensor on pin {}", sensor.pin())
+                None => println!("Reading sensor on pin {}", sensor.pin())
             }
             let reading = sensor.read();
             match reading {
