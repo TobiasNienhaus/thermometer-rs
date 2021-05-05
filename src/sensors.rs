@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
 pub use dht_lib::Sensor as DhtSensor;
+use dht_lib::{Reading, ReadingError};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SensorConfig {
@@ -89,5 +90,9 @@ impl Sensor {
 
     pub fn description(&self) -> Option<&str> {
         self.description.as_deref()
+    }
+
+    pub fn read(&self) -> Result<Reading, ReadingError> {
+        dht_lib::read(self.sensor, self.pin)
     }
 }

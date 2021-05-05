@@ -4,22 +4,31 @@ use dht_lib::read;
 use sensors::DhtSensor;
 use std::time::Duration;
 
-const PIN: u8 = 4;
+const TEST_PIN: u8 = 4;
 
 fn main() {
-    let s = sensors::SensorConfig::build(vec![
-        sensors::Sensor::dht_11(0),
-        sensors::Sensor::dht_11(1),
-        sensors::Sensor::dht_11(2),
-        sensors::Sensor::dht_11(3),
-        sensors::Sensor::dht_22(4),
-        sensors::Sensor::dht_22(5),
-        sensors::Sensor::dht_22(6),
-        sensors::Sensor::dht_22(7),
-    ], 10);
-    let s = serde_yaml::to_string(&s).unwrap();
+    let conf = sensors::SensorConfig::build(vec![
+        sensors::Sensor::dht_11(TEST_PIN),
+    ], 1);
+    let s = serde_yaml::to_string(&conf).unwrap();
     for line in s.lines() {
         println!("{}", line);
+    }
+
+    loop {
+        for sensor in conf.sensors() {
+            match sensor.description() {
+                Some(s) => println!("Reading sensor {}", s),
+                None => pritnln!("Reading sensor on pin {}", sensor.pin())
+            }
+            let reading = sensor.read();
+            match reading {
+                Err(e) => eprintln!("Reading error: {:#?}", e),
+                Ok(o) => println!("Reading: t: {} h: {}", o.temperature, o.humidity),
+            }
+        }
+
+        std::thread::sleep(Duration::from_secs(conf.read_interval() - conf.min_read_time()));
     }
     // loop {
     //     let mut reading = read(DhtSensor::Dht11, PIN);
