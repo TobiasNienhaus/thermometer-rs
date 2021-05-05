@@ -24,8 +24,8 @@ fn main() {
             }
             let reading = sensor.read();
             match reading {
-                Err(e) => eprintln!("Reading error: {:#?}", e),
-                Ok(o) => println!("Reading: t: {} h: {}", o.temperature, o.humidity),
+                Err(e) => bunt::eprintln!("{$red}Reading error{/$}: {:#?}", e),
+                Ok(o) => bunt::println!("Reading: t: {[green]} h: {[green]}", o.temperature, o.humidity),
             }
         }
         // TODO don't unwrap
