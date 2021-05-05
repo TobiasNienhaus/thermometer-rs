@@ -2,26 +2,30 @@ use serde::{Serialize, Deserialize};
 pub use dht_lib::Sensor as DhtSensor;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct SensorCollection {
+pub struct SensorConfig {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    read_interval: Option<u64>,
     sensors: Vec<Sensor>
 }
 
-impl SensorCollection {
+impl SensorConfig {
     pub fn sensors(&self) -> &[Sensor] {
         self.sensors.as_slice()
     }
 
-    pub fn test() -> SensorCollection {
-        SensorCollection {
-            sensors: (0u8..12).map(|i| {
-                Sensor {
-                    sensor: DhtSensor::Dht11,
-                    pin: i,
-                    update_interval: Some(((i as u64) * 12) % 10),
-                    description: Some("Hello".to_owned())
-                }
-            }).collect()
+    pub fn build(sensors: Vec<Sensor>, read_interval: u64) -> SensorConfig {
+        SensorConfig {
+            read_interval: Some(read_interval),
+            sensors
         }
+    }
+
+    pub fn read_interval(&self) -> u64 {
+        self.read_interval.unwrap_or(self.min_read_time())
+    }
+
+    pub fn min_read_time(&self) -> u64 {
+        self.sensors.iter().map(|s| min_update_interval(&s.sensor)).sum()
     }
 }
 
@@ -39,18 +43,36 @@ const fn min_update_interval(sensor: &DhtSensor) -> u64 {
     }
 }
 
+// No idea what I wanted to use that for :D
+// const MIN_READ_TIME_MS: u64 = 0;
+// const MIN_READ_TIME_SEC: f64 = 1f64 / MIN_READ_TIME_MS;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Sensor {
     #[serde(with = "DhtSensorDef")]
     sensor: DhtSensor,
     pin: u8,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    update_interval: Option<u64>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     description: Option<String>
 }
 
 impl Sensor {
+    pub fn dht_11(pin: u8) -> Sensor {
+        Sensor {
+            sensor: DhtSensor::Dht11,
+            pin,
+            description: None
+        }
+    }
+
+    pub fn dht_22(pin: u8) -> Sensor {
+        Sensor {
+            sensor: DhtSensor::Dht22,
+            pin,
+            description: None
+        }
+    }
+
     pub fn sensor(&self) -> &DhtSensor {
         &self.sensor
     }
