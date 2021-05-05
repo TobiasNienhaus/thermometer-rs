@@ -20,18 +20,18 @@ fn main() {
 
     // let conf = read_conf;
     let conf = sensors::SensorConfig::build(vec![
-        sensors::Sensor::named_dht_11(TEST_PIN, "TEST"),
+        sensors::Sensor::named_dht_22(TEST_PIN, "TEST"),
     ], 1);
     let s = serde_yaml::to_string(&conf).unwrap();
     for line in s.lines() {
         println!("{}", line);
     }
 
-    std::process::Command::new("raspistill").args([
-        "-o",
-        "~/Desktop/test2.jpg"
-    ].iter()).output().unwrap();
-    return;
+    // std::process::Command::new("raspistill").args([
+    //     "-o",
+    //     "~/Desktop/test2.jpg"
+    // ].iter()).output().unwrap();
+    // return;
 
     loop {
         let now = std::time::Instant::now();
