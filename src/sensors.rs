@@ -82,12 +82,6 @@ impl Sensor {
         self.pin
     }
 
-    pub fn update_interval(&self) -> u64 {
-        self.update_interval.map(|v| {
-            std::cmp::max(v, min_update_interval(&self.sensor))
-        }).unwrap_or(min_update_interval(&self.sensor))
-    }
-
     pub fn description(&self) -> Option<&str> {
         self.description.as_deref()
     }
