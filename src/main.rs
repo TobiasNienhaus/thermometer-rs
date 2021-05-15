@@ -51,7 +51,7 @@ fn main() {
         headers.push(b);
     }
 
-    csv.write_record(&headers);
+    csv.write_record(&headers).unwrap();
 
     loop {
         let now = Local::now();
@@ -59,7 +59,7 @@ fn main() {
             last_reading_time = now;
             output_path.set_file_name(format!("readings-{}.csv", last_reading_time.to_string()));
             csv = csv::Writer::from_path(&output_path).unwrap();
-            csv.write_record(&headers);
+            csv.write_record(&headers).unwrap();
         } else {
             last_reading_time = now;
         }
@@ -74,19 +74,23 @@ fn main() {
             }
             let reading = sensor.read();
             match reading {
-                Err(e) => bunt::eprintln!("{$red}Reading error{/$}: {:#?}", e),
+                Err(e) => {
+                    bunt::eprintln!("{$red}Reading error{/$}: {:#?}", e);
+                    readings.push(format!("Error: {:#?}", e));
+                    readings.push(format!("Error: {:#?}", e));
+                },
                 Ok(o) => {
                     bunt::println!("Reading: t: {[green]} h: {[green]}", o.temperature, o.humidity);
-                    readings.push(o.temperature);
-                    readings.push(o.humidity);
+                    readings.push(o.temperature.to_string());
+                    readings.push(o.humidity.to_string());
                 },
             }
         }
         let mut record = vec![last_reading_time.to_string()];
         for r in readings {
-            record.push(r.to_string());
+            record.push(r);
         }
-        csv.write_record(&record);
+        csv.write_record(&record).unwrap();
 
         let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(now.elapsed());
 
