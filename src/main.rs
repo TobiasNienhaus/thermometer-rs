@@ -37,7 +37,7 @@ fn main() {
     // ], 1);
 
     let mut last_reading_time = Local::now();
-    output_path.set_file_name(format!("readings-{}.csv", last_reading_time.to_string()));
+    output_path.push(format!("readings-{}.csv", last_reading_time.to_string()));
     let mut csv = csv::Writer::from_path(&output_path).unwrap();
 
     let mut headers = vec!["date".to_owned()];
