@@ -52,6 +52,7 @@ fn main() {
     }
 
     csv.write_record(&headers).unwrap();
+    csv.flush().unwrap();
 
     loop {
         let now = Local::now();
@@ -91,6 +92,7 @@ fn main() {
             record.push(r);
         }
         csv.write_record(&record).unwrap();
+        csv.flush().unwrap();
 
         let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(now.elapsed());
 
