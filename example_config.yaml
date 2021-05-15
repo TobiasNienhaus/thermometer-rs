@@ -1,9 +1,13 @@
 ---
 read_interval: 1
+output_path: ~/Dokumente/Thermometer/data/
 sensors:
-  - sensor: Dht11
-    pin: 4
-    description: A
   - sensor: Dht22
     pin: 4
-    description: B
+    description: Sensor A
+  - sensor: Dht22
+    pin: 17
+    description: Sensor B
+  - sensor: Dht22
+    pin: 27
+    description: Sensor C

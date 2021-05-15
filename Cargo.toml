@@ -12,3 +12,5 @@ dht_lib = { git = "https://github.com/TobiasNienhaus/dht22_pi.git", package = "d
 serde = { version = "1.0.125", features = ["derive"] }
 serde_yaml = "0.8.17"
 bunt = "0.2.4"
+csv = "1.1.6"
+chrono = { version = "0.4.19", features = ["serde"] }
