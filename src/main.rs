@@ -15,7 +15,9 @@ const TEST_PIN2: u8 = 17;
 const TEST_PIN3: u8 = 27;
 
 fn main() {
-    let path: PathBuf = "~/Dokumente/thermometer-config.yaml".into();
+    let home_dir = dirs::home_dir().unwrap();
+    let mut path = home_dir;
+    path.push("Dokumente/thermometer-config.yaml");
     let mut file = OpenOptions::new().read(true).open(path).expect("Could not open config file");
     let mut config_str = String::new();
     file.read_to_string(&mut config_str).expect("Could not read config file to string");
