@@ -37,7 +37,21 @@ fn main() {
     // ], 1);
 
     let mut last_reading_time = Local::now();
-    let mut csv: csv::Writer<File>;
+    output_path.set_file_name(format!("readings-{}.csv", last_reading_time.to_string()));
+    let mut csv = csv::Writer::from_path(&output_path).unwrap();
+
+    let mut headers = vec!["date".to_owned()];
+    for (idx, s) in conf.sensors().iter().enumerate() {
+        let s = s.description()
+            .map(|s| s.to_owned())
+            .unwrap_or(idx.to_string());
+        let a = format!("{} - Temperatur", s);
+        let b = format!("{} - Luftfeuchtigkeit", s);
+        headers.push(a);
+        headers.push(b);
+    }
+
+    csv.write_record(&headers);
 
     loop {
         let now = Local::now();
@@ -45,18 +59,6 @@ fn main() {
             last_reading_time = now;
             output_path.set_file_name(format!("readings-{}.csv", last_reading_time.to_string()));
             csv = csv::Writer::from_path(&output_path).unwrap();
-
-            let mut headers = vec!["date".to_owned()];
-            for (idx, s) in conf.sensors().iter().enumerate() {
-                let s = s.description()
-                    .map(|s| s.to_owned())
-                    .unwrap_or(idx.to_string());
-                let a = format!("{} - Temperatur", s);
-                let b = format!("{} - Luftfeuchtigkeit", s);
-                headers.push(a);
-                headers.push(b);
-            }
-
             csv.write_record(&headers);
         } else {
             last_reading_time = now;
