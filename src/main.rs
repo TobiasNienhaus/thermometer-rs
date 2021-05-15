@@ -18,14 +18,14 @@ fn main() {
     let path: PathBuf = "~/Dokumente/thermometer-config.yaml".into();
     let mut file = OpenOptions::new().read(true).open(path).expect("Could not open config file");
     let mut config_str = String::new();
-    file.read_to_string(&mut config).expect("Could not read config file to string");
+    file.read_to_string(&mut config_str).expect("Could not read config file to string");
 
     let conf: sensors::SensorConfig = serde_yaml::from_str(config_str.as_str())
         .expect("Could not deserialize config");
 
     let mut output_path = PathBuf::from_str(conf.output_path()).unwrap();
     if !output_path.exists() {
-        bunt::println!("{$blue}Creating output directory {[green]}{/$}", output_path);
+        bunt::println!("{$blue}Creating output directory {[green]}{/$}", output_path.to_str().unwrap());
         std::fs::create_dir_all(&output_path);
     }
 
