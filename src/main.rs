@@ -57,6 +57,38 @@ fn main() {
     if devices.len() > 0 {
         for cam in devices {
             println!("Cam: {}", cam);
+            let test_path: PathBuf = "/home/pi/Desktop/test".into();
+            std::fs::create_dir(test_path);
+            match Device::with_uri(&cam) {
+                Ok(dev) => {
+                    if let Ok(controls) = dev.query_controls() {
+                        for control in controls {
+                            println!("Control of {}", cam);
+                            println!(
+                                "- name: {}\n- flags: {:?}\n- type: {:?}\n- id: {}",
+                                control.name,
+                                control.flags,
+                                control.typ,
+                                control.id
+                            );
+                        }
+                    }
+                    if let Ok(streams) = dev.query_streams() {
+                        for control in streams {
+                            println!("Stream of {}", cam);
+                            println!(
+                                "- name: {}\n- flags: {:?}\n- type: {:?}\n- id: {}",
+                                control.name,
+                                control.flags,
+                                control.typ,
+                                control.id
+                            );
+                        }
+                    }
+                },
+                Err(e) => println!("Couldn't get device {}. Error: {}", cam, e)
+            }
+
         }
     } else {
         println!("eye-rs couldn't find any cameras");
