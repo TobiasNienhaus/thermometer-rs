@@ -1,4 +1,5 @@
 mod sensors;
+mod cam;
 
 use dht_lib::read;
 use sensors::DhtSensor;
@@ -40,38 +41,7 @@ fn main() {
     img_output_path.push("img");
     let img_output_path = img_output_path;
 
-    bunt::println!("{$blue}Reading camera data{/$}");
-    let cam_info = rascam::info().expect("Couldn't read camera data!");
-    let has_cam = if cam_info.cameras.len() > 0 {
-        bunt::println!("There are {[green]} cameras connected", cam_info.cameras.len());
-        true
-    } else {
-        bunt::println!("{$yellow}No camera detected!{/$}");
-        false
-    };
-    println!("-----------------------------");
-    println!("rascam cam data:");
-    for cam in cam_info.cameras {
-        println!(
-            "Camera: {}\n- max height: {}\n- max width: {}\n- port: {}\n- has lens: {}",
-            cam.camera_name,
-            cam.max_height,
-            cam.max_width,
-            cam.port_id,
-            cam.lens_present
-        );
-        if let Ok(mut cam) = SimpleCamera::new(cam) {
-            cam.activate().unwrap();
-
-            let sleep_duration = std::time::Duration::from_millis(2000);
-            std::thread::sleep(sleep_duration);
-
-            let b = cam.take_one().unwrap();
-            let mut p: PathBuf = "/home/pi/Desktop/test/".into();
-            p.push(format!("img-{}.jpg", Local::now().to_string()));
-            File::create(&p).unwrap().write_all(&b).unwrap();
-        }
-    }
+    let cams = cam::init().unwrap();
 
     let mut headers = vec!["date".to_owned()];
     for (idx, s) in conf.sensors().iter().enumerate() {
@@ -124,6 +94,10 @@ fn main() {
             }
         }
         // TODO take image
+        for cam in cams {
+            println!("Taking image");
+            cam.take_and_save(&img_output_path, Local::now().to_string().as_str()).unwrap();
+        }
         // TODO somehow retry sensors that failed
         let mut record = vec![last_reading_time.to_string()];
         for r in readings {
