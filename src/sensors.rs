@@ -52,10 +52,6 @@ const fn min_update_interval(sensor: &DhtSensor) -> u64 {
     }
 }
 
-// No idea what I wanted to use that for :D
-// const MIN_READ_TIME_MS: u64 = 0;
-// const MIN_READ_TIME_SEC: f64 = 1f64 / MIN_READ_TIME_MS;
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Sensor {
     #[serde(with = "DhtSensorDef")]

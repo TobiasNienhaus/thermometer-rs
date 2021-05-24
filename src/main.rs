@@ -19,17 +19,44 @@ fn main() {
     let conf: sensors::SensorConfig = serde_yaml::from_str(config_str.as_str())
         .expect("Could not deserialize config");
 
-    let mut output_path = PathBuf::from_str(conf.output_path()).unwrap();
+    let output_path = PathBuf::from_str(conf.output_path()).unwrap();
     if !output_path.exists() {
         bunt::println!("{$blue}Creating output directory {[green]}{/$}", output_path.to_str().unwrap());
         std::fs::create_dir_all(&output_path);
     }
 
+    bunt::println!("{$blue}Reading camera data{/$}");
+    let cam_info = rascam::info().expect("Couldn't read camera data!");
+    let has_cam = if cam_info.cameras.len() > 0 {
+        bunt::println!("There are {[green]} cameras connected", cam_info.cameras.len());
+        true
+    } else {
+        bunt::println!("{$yellow}No camera detected!{/$}");
+        false
+    };
+    for cam in cam_info.cameras {
+        println!(
+            "Camera: {}\n- max height: {}\n- max width: {}\n- port: {}\n- has lens: {}",
+            cam.camera_name,
+            cam.max_height,
+            cam.max_width,
+            cam.port_id,
+            cam.lens_present
+        )
+    }
+
     let mut last_reading_time = Local::now();
-    output_path.push(format!("readings-{}.csv", last_reading_time.to_string()));
+    let mut data_output_path = output_path.clone();
+    data_output_path.push("data");
+    std::fs::create_dir_all(&data_output_path);
+    data_output_path.push(format!("readings-{}.csv", last_reading_time.to_string()));
     let mut csv = csv::WriterBuilder::new()
-        .delimiter(conf.delimiter()) // TODO
-        .from_path(&output_path).unwrap();
+        .delimiter(conf.delimiter())
+        .from_path(&data_output_path).unwrap();
+
+    let mut img_output_path = output_path.clone();
+    img_output_path.push("img");
+    let img_output_path = img_output_path;
 
     let mut headers = vec!["date".to_owned()];
     for (idx, s) in conf.sensors().iter().enumerate() {
@@ -49,8 +76,10 @@ fn main() {
         let now = Local::now();
         if last_reading_time.day() != now.day() {
             last_reading_time = now;
-            output_path.set_file_name(format!("readings-{}.csv", last_reading_time.to_string()));
-            csv = csv::Writer::from_path(&output_path).unwrap();
+            data_output_path.set_file_name(format!("readings-{}.csv", last_reading_time.to_string()));
+            csv = csv::WriterBuilder::new()
+                .delimiter(conf.delimiter()) // TODO
+                .from_path(&data_output_path).unwrap();
             csv.write_record(&headers).unwrap();
         } else {
             last_reading_time = now;
@@ -59,6 +88,7 @@ fn main() {
         let mut readings = Vec::with_capacity(conf.sensors().len());
 
         let now = std::time::Instant::now();
+
         for sensor in conf.sensors() {
             match sensor.description() {
                 Some(s) => bunt::println!("Reading sensor {[yellow]}", s),
@@ -78,6 +108,8 @@ fn main() {
                 },
             }
         }
+        // TODO take image
+        // TODO somehow retry sensors that failed
         let mut record = vec![last_reading_time.to_string()];
         for r in readings {
             record.push(r);
