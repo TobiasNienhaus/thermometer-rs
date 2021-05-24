@@ -10,7 +10,6 @@ use std::str::FromStr;
 
 use chrono::prelude::*;
 
-use eye::prelude::*;
 use rascam::SimpleCamera;
 
 fn main() {
