@@ -50,7 +50,7 @@ fn main() {
     }
 
     println!("-----------------------------");
-    pritnln!("eye-rs cam data:");
+    println!("eye-rs cam data:");
     let ctx = Context::new();
 
     let devices = ctx.query_devices().expect("eye-rs couldn't query context");
