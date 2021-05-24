@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::fs::File;
 use std::io::Write;
 
+#[derive(Debug)]
 pub enum CamError {
     RasCam(rascam::CameraError),
     Io(std::io::Error)
@@ -62,8 +63,8 @@ impl Camera {
 
 pub fn init() -> Result<Vec<Camera>, rascam::CameraError> {
     let info = rascam::info()?;
-    info.cameras
+    Ok(info.cameras
         .into_iter()
         .map(|cam| Camera { cam_info: cam })
-        .collect()
+        .collect())
 }
