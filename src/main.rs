@@ -141,6 +141,8 @@ fn main() {
         csv.write_record(&record).unwrap();
         csv.flush().unwrap();
 
+        bunt::println!("Done reading sensors for {} on {}", now.format("%T"), now.format("%d.%m.%Y"));
+
         let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(instant.elapsed());
 
         let to_wait = match to_add {
