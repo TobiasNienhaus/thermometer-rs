@@ -10,6 +10,8 @@ use std::str::FromStr;
 
 use chrono::prelude::*;
 
+use eye::prelude::*;
+
 fn main() {
     let path: PathBuf = "/home/pi/Dokumente/thermometer-config.yaml".into();
     let mut file = OpenOptions::new().read(true).open(path).expect("Could not open config file");
@@ -34,6 +36,8 @@ fn main() {
         bunt::println!("{$yellow}No camera detected!{/$}");
         false
     };
+    println!("-----------------------------");
+    pritnln!("rascam cam data:");
     for cam in cam_info.cameras {
         println!(
             "Camera: {}\n- max height: {}\n- max width: {}\n- port: {}\n- has lens: {}",
@@ -43,6 +47,19 @@ fn main() {
             cam.port_id,
             cam.lens_present
         )
+    }
+
+    println!("-----------------------------");
+    pritnln!("eye-rs cam data:");
+    let ctx = Context::new();
+
+    let devices = ctx.query_devices().expect("eye-rs couldn't query context");
+    if devices.len() > 0 {
+        for cam in devices {
+            println!("Cam: {}", cam);
+        }
+    } else {
+        println!("eye-rs couldn't find any cameras");
     }
 
     let mut last_reading_time = Local::now();
