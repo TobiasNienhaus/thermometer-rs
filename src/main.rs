@@ -94,7 +94,7 @@ fn main() {
             }
         }
         // TODO take image
-        for cam in cams {
+        for cam in cams.iter() {
             println!("Taking image");
             cam.take_and_save(&img_output_path, Local::now().to_string().as_str()).unwrap();
         }
