@@ -78,7 +78,7 @@ fn main() {
         }
 
         let mut curr_img_path = img_output_path.clone();
-        curr_img_path.push(now.format(DATE_FMT));
+        curr_img_path.push(now.format(DATE_FMT).to_string());
 
         let mut readings = Vec::with_capacity(conf.sensors().len());
 
@@ -108,7 +108,7 @@ fn main() {
         }
         let mut img_locs = vec![];
         for cam in cams.iter() {
-            println!("Camera {[blue]} is taking an image now", cam.name());
+            bunt::println!("Camera {[blue]} is taking an image now", cam.name());
             match cam.take_and_save(
                 &curr_img_path,
                 format!("img_{}_{}", cam.name(), now.format(TIME_FMT)).as_str()
