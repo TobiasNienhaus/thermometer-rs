@@ -5,12 +5,13 @@ use sensors::DhtSensor;
 use std::time::Duration;
 use std::path::PathBuf;
 use std::fs::{OpenOptions, File};
-use std::io::Read;
+use std::io::{Read, Write};
 use std::str::FromStr;
 
 use chrono::prelude::*;
 
 use eye::prelude::*;
+use rascam::SimpleCamera;
 
 fn main() {
     let path: PathBuf = "/home/pi/Dokumente/thermometer-config.yaml".into();
@@ -26,6 +27,19 @@ fn main() {
         bunt::println!("{$blue}Creating output directory {[green]}{/$}", output_path.to_str().unwrap());
         std::fs::create_dir_all(&output_path);
     }
+
+    let mut last_reading_time = Local::now();
+    let mut data_output_path = output_path.clone();
+    data_output_path.push("data");
+    std::fs::create_dir_all(&data_output_path);
+    data_output_path.push(format!("readings-{}.csv", last_reading_time.to_string()));
+    let mut csv = csv::WriterBuilder::new()
+        .delimiter(conf.delimiter())
+        .from_path(&data_output_path).unwrap();
+
+    let mut img_output_path = output_path.clone();
+    img_output_path.push("img");
+    let img_output_path = img_output_path;
 
     bunt::println!("{$blue}Reading camera data{/$}");
     let cam_info = rascam::info().expect("Couldn't read camera data!");
@@ -46,67 +60,19 @@ fn main() {
             cam.max_width,
             cam.port_id,
             cam.lens_present
-        )
-    }
+        );
+        if let Ok(mut cam) = SimpleCamera::new(cam) {
+            cam.activate().unwrap();
 
-    println!("-----------------------------");
-    println!("eye-rs cam data:");
-    let ctx = Context::new();
+            let sleep_duration = std::time::Duration::from_millis(2000);
+            std::thread::sleep(sleep_duration);
 
-    let devices = ctx.query_devices().expect("eye-rs couldn't query context");
-    if devices.len() > 0 {
-        for cam in devices {
-            println!("Cam: {}", cam);
-            let test_path: PathBuf = "/home/pi/Desktop/test".into();
-            std::fs::create_dir(test_path);
-            match Device::with_uri(&cam) {
-                Ok(dev) => {
-                    if let Ok(controls) = dev.query_controls() {
-                        for control in controls {
-                            println!("Control of {}", cam);
-                            println!(
-                                "- name: {}\n- flags: {:?}\n- type: {:?}\n- id: {}",
-                                control.name,
-                                control.flags,
-                                control.typ,
-                                control.id
-                            );
-                        }
-                    }
-                    if let Ok(streams) = dev.query_streams() {
-                        for control in streams {
-                            println!("Stream of {}", cam);
-                            println!(
-                                "- height: {}\n- width: {}\n- flags: {:?}\n- interval: {:?}\n- pixfmt: {:?}",
-                                control.height,
-                                control.width,
-                                control.flags,
-                                control.interval,
-                                control.pixfmt
-                            );
-                        }
-                    }
-                },
-                Err(e) => println!("Couldn't get device {}. Error: {}", cam, e)
-            }
-
+            let b = cam.take_one().unwrap();
+            let mut p: PathBuf = "/home/pi/Desktop/test/".into();
+            p.push(format!("img-{}.jpg", Local::now().to_string()));
+            File::create(&p).unwrap().write_all(&b).unwrap();
         }
-    } else {
-        println!("eye-rs couldn't find any cameras");
     }
-
-    let mut last_reading_time = Local::now();
-    let mut data_output_path = output_path.clone();
-    data_output_path.push("data");
-    std::fs::create_dir_all(&data_output_path);
-    data_output_path.push(format!("readings-{}.csv", last_reading_time.to_string()));
-    let mut csv = csv::WriterBuilder::new()
-        .delimiter(conf.delimiter())
-        .from_path(&data_output_path).unwrap();
-
-    let mut img_output_path = output_path.clone();
-    img_output_path.push("img");
-    let img_output_path = img_output_path;
 
     let mut headers = vec!["date".to_owned()];
     for (idx, s) in conf.sensors().iter().enumerate() {
