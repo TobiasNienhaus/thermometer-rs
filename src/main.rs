@@ -79,6 +79,7 @@ fn main() {
 
         let mut curr_img_path = img_output_path.clone();
         curr_img_path.push(now.format(DATE_FMT).to_string());
+        std::fs::create_dir_all(&curr_img_path);
 
         let mut readings = Vec::with_capacity(conf.sensors().len());
 
