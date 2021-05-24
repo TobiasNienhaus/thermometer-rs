@@ -115,10 +115,12 @@ fn main() {
                 format!("img_{}_{}", cam.name(), now.format(TIME_FMT)).as_str()
             ) {
                 Ok(path) => {
-                    img_locs.push(match pathdiff::diff_paths(&path, &data_output_path) {
-                        Some(relative) => relative.to_string_lossy().into_owned(),
-                        None => path.to_string_lossy().into_owned()
-                    });
+                    img_locs.push(data_output_path.parent()
+                        .map(|par| pathdiff::diff_paths(&path, par))
+                        .flatten()
+                        .map(|rel| rel.to_string_lossy().into_owned())
+                        .unwrap_or(path.to_string_lossy().into_owned())
+                    );
                 },
                 Err(e) => {
                     bunt::println!("{$red}Error{/$}: couldn't take image ({[yellow]:?})", e);
