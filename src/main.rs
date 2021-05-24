@@ -77,11 +77,12 @@ fn main() {
                         for control in streams {
                             println!("Stream of {}", cam);
                             println!(
-                                "- name: {}\n- flags: {:?}\n- type: {:?}\n- id: {}",
-                                control.name,
+                                "- height: {}\n- width: {}\n- flags: {:?}\n- interval: {:?}\n- pixfmt: {:?}",
+                                control.height,
+                                control.width,
                                 control.flags,
-                                control.typ,
-                                control.id
+                                control.interval,
+                                control.pixfmt
                             );
                         }
                     }
