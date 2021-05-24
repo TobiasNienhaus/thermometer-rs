@@ -40,6 +40,7 @@ fn main() {
     let mut img_output_path = output_path.clone();
     img_output_path.push("img");
     let img_output_path = img_output_path;
+    std::fs::create_dir_all(&img_output_path);
 
     let cams = cam::init().unwrap();
 

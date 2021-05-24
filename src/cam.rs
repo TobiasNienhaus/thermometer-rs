@@ -56,6 +56,7 @@ impl Camera {
         std::thread::sleep(std::time::Duration::from_millis(2000));
 
         let b = cam.take_one()?;
+        println!("Saving to {:?}", file);
         File::create(&file)?.write_all(&b)?;
         Ok(())
     }
