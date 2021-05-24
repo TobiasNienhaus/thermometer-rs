@@ -2,6 +2,12 @@ use std::os::raw::c_uint;
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::Write;
+use serde::{Serialize, Deserialize};
+
+pub struct Config {
+    encoding: Encoding,
+
+}
 
 #[derive(Debug)]
 pub enum CamError {

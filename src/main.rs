@@ -65,6 +65,8 @@ fn main() {
     csv.flush().unwrap();
 
     loop {
+        // TODO read all old images and scale them down
+        // This way only the newest images are full size
         let now = Local::now();
         if last_reading_time.day() != now.day() {
             last_reading_time = now;
