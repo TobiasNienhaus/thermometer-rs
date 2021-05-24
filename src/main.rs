@@ -10,10 +10,6 @@ use std::str::FromStr;
 
 use chrono::prelude::*;
 
-const TEST_PIN1: u8 = 4;
-const TEST_PIN2: u8 = 17;
-const TEST_PIN3: u8 = 27;
-
 fn main() {
     let path: PathBuf = "/home/pi/Dokumente/thermometer-config.yaml".into();
     let mut file = OpenOptions::new().read(true).open(path).expect("Could not open config file");
@@ -29,16 +25,11 @@ fn main() {
         std::fs::create_dir_all(&output_path);
     }
 
-    // let conf = read_conf;
-    // let conf = sensors::SensorConfig::build(vec![
-    //     sensors::Sensor::named_dht_22(TEST_PIN1, "TEST --- A"),
-    //     sensors::Sensor::named_dht_22(TEST_PIN2, "TEST --- B"),
-    //     sensors::Sensor::named_dht_22(TEST_PIN3, "TEST --- C"),
-    // ], 1);
-
     let mut last_reading_time = Local::now();
     output_path.push(format!("readings-{}.csv", last_reading_time.to_string()));
-    let mut csv = csv::Writer::from_path(&output_path).unwrap();
+    let mut csv = csv::WriterBuilder::new()
+        .delimiter(conf.delimiter()) // TODO
+        .from_path(&output_path).unwrap();
 
     let mut headers = vec!["date".to_owned()];
     for (idx, s) in conf.sensors().iter().enumerate() {
@@ -107,14 +98,4 @@ fn main() {
             _ => {}
         }
     }
-    // loop {
-    //     let mut reading = read(DhtSensor::Dht11, PIN);
-    //     while let Err(e) = &reading {
-    //         eprintln!("Could not read data: {:?}", e);
-    //         reading = read(DhtSensor::Dht11, PIN);
-    //     }
-    //     let reading = reading.unwrap();
-    //     println!("Read data: Temperature {}C Humidity {}%", reading.temperature, reading.humidity);
-    //     std::thread::sleep(Duration::from_secs(4));
-    // }
 }

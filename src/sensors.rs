@@ -6,6 +6,8 @@ use dht_lib::{Reading, ReadingError};
 pub struct SensorConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     read_interval: Option<u64>,
+    #[serde(default=",")]
+    delimiter: char,
     sensors: Vec<Sensor>,
     output_path: String
 }
@@ -15,20 +17,16 @@ impl SensorConfig {
         self.sensors.as_slice()
     }
 
-    pub fn build(sensors: Vec<Sensor>, read_interval: u64) -> SensorConfig {
-        SensorConfig {
-            read_interval: Some(read_interval),
-            sensors,
-            output_path: "".to_owned()
-        }
-    }
-
     pub fn read_interval(&self) -> u64 {
         self.read_interval.unwrap_or(self.min_read_time())
     }
 
     pub fn min_read_time(&self) -> u64 {
         self.sensors.iter().map(|s| min_update_interval(&s.sensor)).sum()
+    }
+
+    pub fn delimiter(&self) -> u8 {
+        self.delimiter as u8
     }
 
     pub fn output_path(&self) -> &str {
