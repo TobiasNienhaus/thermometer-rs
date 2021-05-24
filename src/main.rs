@@ -37,7 +37,7 @@ fn main() {
         false
     };
     println!("-----------------------------");
-    pritnln!("rascam cam data:");
+    println!("rascam cam data:");
     for cam in cam_info.cameras {
         println!(
             "Camera: {}\n- max height: {}\n- max width: {}\n- port: {}\n- has lens: {}",
