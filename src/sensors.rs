@@ -6,11 +6,13 @@ use dht_lib::{Reading, ReadingError};
 pub struct SensorConfig {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     read_interval: Option<u64>,
-    #[serde(default=",")]
+    #[serde(default="DEFAULT_PATH")]
     delimiter: char,
     sensors: Vec<Sensor>,
     output_path: String
 }
+
+const DEFAULT_PATH: char = ',';
 
 impl SensorConfig {
     pub fn sensors(&self) -> &[Sensor] {
