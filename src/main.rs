@@ -12,6 +12,11 @@ use std::str::FromStr;
 use chrono::prelude::*;
 
 use rascam::SimpleCamera;
+use pathdiff::diff_paths;
+
+const DATETIME_FMT: &str = "%F_%H-%M-%S_%z";
+const DATE_FMT: &str = "%F_%z";
+const TIME_FMT: &str = "%H-%M-%S_%z";
 
 fn main() {
     let path: PathBuf = "/home/pi/Dokumente/thermometer-config.yaml".into();
@@ -32,7 +37,7 @@ fn main() {
     let mut data_output_path = output_path.clone();
     data_output_path.push("data");
     std::fs::create_dir_all(&data_output_path);
-    data_output_path.push(format!("readings-{}.csv", last_reading_time.to_string()));
+    data_output_path.push(format!("readings-{}.csv", last_reading_time.format(DATETIME_FMT)));
     let mut csv = csv::WriterBuilder::new()
         .delimiter(conf.delimiter())
         .from_path(&data_output_path).unwrap();
@@ -54,6 +59,7 @@ fn main() {
         headers.push(a);
         headers.push(b);
     }
+    headers.push("Bilder".to_owned());
 
     csv.write_record(&headers).unwrap();
     csv.flush().unwrap();
@@ -62,7 +68,7 @@ fn main() {
         let now = Local::now();
         if last_reading_time.day() != now.day() {
             last_reading_time = now;
-            data_output_path.set_file_name(format!("readings-{}.csv", last_reading_time.to_string()));
+            data_output_path.set_file_name(format!("readings_{}.csv", last_reading_time.format(DATETIME_FMT)));
             csv = csv::WriterBuilder::new()
                 .delimiter(conf.delimiter()) // TODO
                 .from_path(&data_output_path).unwrap();
@@ -71,9 +77,15 @@ fn main() {
             last_reading_time = now;
         }
 
+        let mut curr_img_path = img_output_path.clone();
+        curr_img_path.push(now.format(DATE_FMT));
+
         let mut readings = Vec::with_capacity(conf.sensors().len());
 
-        let now = std::time::Instant::now();
+        println!("-------------------------");
+        bunt::println!("Reading sensors for {} on {}", now.format("%T"), now.format("%d.%m.%Y"));
+
+        let instant = std::time::Instant::now();
 
         for sensor in conf.sensors() {
             match sensor.description() {
@@ -94,20 +106,41 @@ fn main() {
                 },
             }
         }
-        // TODO take image
+        let mut img_locs = vec![];
         for cam in cams.iter() {
-            println!("Taking image");
-            cam.take_and_save(&img_output_path, Local::now().to_string().as_str()).unwrap();
+            println!("Camera {[blue]} is taking an image now", cam.name());
+            match cam.take_and_save(
+                &curr_img_path,
+                format!("img_{}_{}", cam.name(), now.format(TIME_FMT)).as_str()
+            ) {
+                Ok(path) => {
+                    img_locs.push(match pathdiff::diff_paths(&path, &data_output_path) {
+                        Some(relative) => relative.to_string_lossy().into_owned(),
+                        None => path.to_string_lossy().into_owned()
+                    });
+                },
+                Err(e) => {
+                    bunt::println!("{$red}Error{/$}: couldn't take image ({[yellow]:?})", e);
+                }
+            }
         }
         // TODO somehow retry sensors that failed
         let mut record = vec![last_reading_time.to_string()];
         for r in readings {
             record.push(r);
         }
+
+        let mut locs = String::new();
+        for l in img_locs {
+            locs += l.as_str();
+            locs.push('\n');
+        }
+        record.push(locs);
+
         csv.write_record(&record).unwrap();
         csv.flush().unwrap();
 
-        let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(now.elapsed());
+        let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(instant.elapsed());
 
         let to_wait = match to_add {
             None => Some(Duration::from_secs(conf.read_interval())),

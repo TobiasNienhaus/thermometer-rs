@@ -43,7 +43,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn take_and_save(&self, path: &PathBuf, filename: &str) -> Result<(), CamError> {
+    pub fn take_and_save(&self, path: &PathBuf, filename: &str) -> Result<PathBuf, CamError> {
         let mut file = path.clone();
         file.push(filename);
         file.set_extension("jpg"); // TODO get from requested
@@ -56,9 +56,12 @@ impl Camera {
         std::thread::sleep(std::time::Duration::from_millis(2000));
 
         let b = cam.take_one()?;
-        println!("Saving to {:?}", file);
         File::create(&file)?.write_all(&b)?;
-        Ok(())
+        Ok(file)
+    }
+
+    pub fn name(&self) -> &str {
+        self.cam_info.camera_name.as_str()
     }
 }
 
