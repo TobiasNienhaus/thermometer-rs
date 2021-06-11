@@ -143,7 +143,7 @@ fn main() {
             }
         } else {
             bunt::println!("{$yellow}Info{/$}: Skipped taking an image due to the current time and config.");
-            img_locs.push("Skipped taking an image, because of the time".to_owned());
+            img_locs.push("Kamera aufgrund von Einstellungen übersprungen".to_owned());
         }
         // TODO somehow retry sensors that failed
         let mut record = vec![last_reading_time.to_string()];
