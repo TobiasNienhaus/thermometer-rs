@@ -56,7 +56,7 @@ impl CamConfig {
     pub fn cam_start(&self) -> Option<chrono::NaiveTime> {
         if let Some(start) = &self.start {
             let format =
-                chrono::format::strftime::StrftimeItems::new(self.date_format.as_str());
+                chrono::format::strftime::StrftimeItems::new(self.time_format.as_str());
             let mut parsed = chrono::format::Parsed::new();
             let res = chrono::format::parse(&mut parsed, start.as_str(), format).ok();
             if res.is_some() {
@@ -72,7 +72,7 @@ impl CamConfig {
     pub fn cam_stop(&self) -> Option<chrono::NaiveTime> {
         if let Some(stop) = &self.stop {
             let format =
-                chrono::format::strftime::StrftimeItems::new(self.date_format.as_str());
+                chrono::format::strftime::StrftimeItems::new(self.time_format.as_str());
             let mut parsed = chrono::format::Parsed::new();
             let res = chrono::format::parse(&mut parsed, stop.as_str(), format).ok();
             if res.is_some() {
