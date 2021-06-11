@@ -11,3 +11,7 @@ sensors:
   - sensor: Dht22
     pin: 27
     description: Sensor C
+cam:
+  date_format: %H-%M-%S
+  start: 08-00-00
+  end: 20-00-00

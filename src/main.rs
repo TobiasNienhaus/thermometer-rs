@@ -1,5 +1,6 @@
 mod sensors;
 mod cam;
+mod config;
 
 use dht_lib::read;
 use sensors::DhtSensor;
@@ -24,7 +25,7 @@ fn main() {
     let mut config_str = String::new();
     file.read_to_string(&mut config_str).expect("Could not read config file to string");
 
-    let conf: sensors::SensorConfig = serde_yaml::from_str(config_str.as_str())
+    let conf: config::Config = serde_yaml::from_str(config_str.as_str())
         .expect("Could not deserialize config");
 
     let output_path = PathBuf::from_str(conf.output_path()).unwrap();
@@ -46,6 +47,16 @@ fn main() {
     img_output_path.push("img");
     let img_output_path = img_output_path;
     std::fs::create_dir_all(&img_output_path);
+
+    let cam_start = conf.cam().cam_start();
+    let cam_stop = conf.cam().cam_stop();
+    let can_take_img = |time: NaiveTime| {
+        if cam_start.is_none() || cam_stop.is_none() {
+            true
+        } else {
+            time >= cam_start.unwrap() && time <= cam_stop.unwrap()
+        }
+    };
 
     let cams = cam::init().unwrap();
 
@@ -110,24 +121,29 @@ fn main() {
             }
         }
         let mut img_locs = vec![];
-        for cam in cams.iter() {
-            bunt::println!("Camera {[blue]} is taking an image now", cam.name());
-            match cam.take_and_save(
-                &curr_img_path,
-                format!("img_{}_{}", cam.name(), now.format(TIME_FMT)).as_str()
-            ) {
-                Ok(path) => {
-                    img_locs.push(data_output_path.parent()
-                        .map(|par| pathdiff::diff_paths(&path, par))
-                        .flatten()
-                        .map(|rel| rel.to_string_lossy().into_owned())
-                        .unwrap_or(path.to_string_lossy().into_owned())
-                    );
-                },
-                Err(e) => {
-                    bunt::println!("{$red}Error{/$}: couldn't take image ({[yellow]:?})", e);
+        if can_take_img(now.time()) {
+            for cam in cams.iter() {
+                bunt::println!("Camera {[blue]} is taking an image now", cam.name());
+                match cam.take_and_save(
+                    &curr_img_path,
+                    format!("img_{}_{}", cam.name(), now.format(TIME_FMT)).as_str()
+                ) {
+                    Ok(path) => {
+                        img_locs.push(data_output_path.parent()
+                            .map(|par| pathdiff::diff_paths(&path, par))
+                            .flatten()
+                            .map(|rel| rel.to_string_lossy().into_owned())
+                            .unwrap_or(path.to_string_lossy().into_owned())
+                        );
+                    },
+                    Err(e) => {
+                        bunt::println!("{$red}Error{/$}: couldn't take image ({[yellow]:?})", e);
+                    }
                 }
             }
+        } else {
+            bunt::println!("{$yellow}Info{/$}: Skipped taking an image due to the current time and config.");
+            img_locs.push("Skipped taking an image, because of the time".to_owned());
         }
         // TODO somehow retry sensors that failed
         let mut record = vec![last_reading_time.to_string()];
