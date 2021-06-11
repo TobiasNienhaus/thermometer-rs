@@ -45,7 +45,7 @@ impl Config {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CamConfig {
     // %H:%M:%S
-    date_format: String,
+    time_format: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     start: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -54,34 +54,32 @@ pub struct CamConfig {
 
 impl CamConfig {
     pub fn cam_start(&self) -> Option<chrono::NaiveTime> {
-        let start = if self.start.is_some() {
-            self.start.unwrap().as_str()
-        } else {
-            return None
-        };
-        let format =
-            chrono::format::strftime::StrftimeItems::new(self.date_format.as_str());
-        let mut parsed = chrono::format::Parsed::new();
-        let res = chrono::format::parse(&mut parsed, start, format).ok();
-        if res.is_some() {
-            parsed.to_naive_time().ok()
+        if let Some(start) = &self.start {
+            let format =
+                chrono::format::strftime::StrftimeItems::new(self.date_format.as_str());
+            let mut parsed = chrono::format::Parsed::new();
+            let res = chrono::format::parse(&mut parsed, start.as_str(), format).ok();
+            if res.is_some() {
+                parsed.to_naive_time().ok()
+            } else {
+                None
+            }
         } else {
             None
         }
     }
 
     pub fn cam_stop(&self) -> Option<chrono::NaiveTime> {
-        let start = if self.stop.is_some() {
-            self.stop.unwrap().as_str()
-        } else {
-            return None
-        };
-        let format =
-            chrono::format::strftime::StrftimeItems::new(self.date_format.as_str());
-        let mut parsed = chrono::format::Parsed::new();
-        let res = chrono::format::parse(&mut parsed, start, format).ok();
-        if res.is_some() {
-            parsed.to_naive_time().ok()
+        if let Some(stop) = &self.stop {
+            let format =
+                chrono::format::strftime::StrftimeItems::new(self.date_format.as_str());
+            let mut parsed = chrono::format::Parsed::new();
+            let res = chrono::format::parse(&mut parsed, stop.as_str(), format).ok();
+            if res.is_some() {
+                parsed.to_naive_time().ok()
+            } else {
+                None
+            }
         } else {
             None
         }

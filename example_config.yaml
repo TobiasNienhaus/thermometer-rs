@@ -12,6 +12,6 @@ sensors:
     pin: 27
     description: Sensor C
 cam:
-  date_format: %H-%M-%S
+  time_format: %H-%M-%S
   start: 08-00-00
   end: 20-00-00
