@@ -104,7 +104,7 @@ fn main() {
             readings.push(String::new());
         }
 
-        let mut to_test: Vec<(usize, sensors::Sensor)> = conf.sensors().iter().enumerate().collect();
+        let mut to_test: Vec<(usize, sensors::Sensor)> = conf.sensors().iter().map(|s| s.clone()).enumerate().collect();
         let mut tries: u64 = 0;
 
         'big_one: loop {
