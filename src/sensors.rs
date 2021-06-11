@@ -16,7 +16,7 @@ pub const fn min_update_interval(sensor: &DhtSensor) -> u64 {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Sensor {
     // TODO maybe store last read point and then
     //  add another function to wait until the sensor is free to be read again

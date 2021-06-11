@@ -7,9 +7,17 @@ pub struct Config {
     read_interval: Option<u64>,
     #[serde(default="default_path")]
     delimiter: char,
+    #[serde(default="default_sensor_retries")]
+    max_sensor_retries: u64,
     sensors: Vec<sensors::Sensor>,
     output_path: String,
     cam: CamConfig
+}
+
+fn default_sensor_retries() -> u64 { 0 }
+
+fn test_sensor_retries(val: u64) -> bool {
+    val == 0
 }
 
 fn default_path() -> char {
@@ -39,6 +47,10 @@ impl Config {
 
     pub fn cam(&self) -> &CamConfig {
         &self.cam
+    }
+
+    pub fn max_sensor_retries(&self) -> u64 {
+        self.max_sensor_retries
     }
 }
 

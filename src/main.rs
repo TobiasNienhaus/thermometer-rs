@@ -99,27 +99,72 @@ fn main() {
         println!("-------------------------");
         bunt::println!("Reading sensors for {} on {}", now.format("%T"), now.format("%d.%m.%Y"));
 
-        let instant = std::time::Instant::now();
+        for _ in 0..conf.sensors().len() {
+            readings.push(String::new());
+            readings.push(String::new());
+        }
 
-        for sensor in conf.sensors() {
-            match sensor.description() {
-                Some(s) => bunt::println!("Reading sensor {[yellow]}", s),
-                None => bunt::println!("Reading sensor on pin {[yellow]}", sensor.pin())
+        let mut to_test: Vec<(usize, sensors::Sensor)> = conf.sensors().iter().enumerate().collect();
+        let mut tries: u64 = 0;
+
+        'big_one: loop {
+            let mut failed = Vec::new();
+            let instant = std::time::Instant::now();
+
+            for (idx, sensor) in to_test.iter() {
+                match sensor.description() {
+                    Some(s) => bunt::println!("Reading sensor {[yellow]}", s),
+                    None => bunt::println!("Reading sensor on pin {[yellow]}", sensor.pin())
+                }
+                let reading = sensor.read();
+                match reading {
+                    Err(e) => {
+                        bunt::eprintln!("{$red}Reading error{/$}: {:#?}", e);
+                        if let Some(ele) = readings.get_mut(idx * 2) {
+                            *ele = format!("Error: {:#?}", e);
+                        }
+                        if let Some(ele) = readings.get_mut(idx * 2 + 1) {
+                            *ele = format!("Error: {:#?}", e);
+                        }
+                        failed.push((*idx, sensor.clone()));
+                    },
+                    Ok(o) => {
+                        bunt::println!("Reading: t: {[green]} h: {[green]}", o.temperature, o.humidity);
+                        if let Some(ele) = readings.get_mut(idx * 2) {
+                            *ele = o.temperature.to_string();
+                        }
+                        if let Some(ele) = readings.get_mut(idx * 2 + 1) {
+                            *ele = o.humidity.to_string();
+                        }
+                    },
+                }
             }
-            let reading = sensor.read();
-            match reading {
-                Err(e) => {
-                    bunt::eprintln!("{$red}Reading error{/$}: {:#?}", e);
-                    readings.push(format!("Error: {:#?}", e));
-                    readings.push(format!("Error: {:#?}", e));
-                },
-                Ok(o) => {
-                    bunt::println!("Reading: t: {[green]} h: {[green]}", o.temperature, o.humidity);
-                    readings.push(o.temperature.to_string());
-                    readings.push(o.humidity.to_string());
-                },
+
+            if !failed.is_empty() {
+                bunt::eprintln!("{$red}Failed to read {[yellow]} sensors{/$}", failed.len());
+                for (_, s) in failed.iter() {
+                    if let Some(desc) = s.description() {
+                        eprintln!("- {} -> {:?}", desc, s.sensor())
+                    } else {
+                        eprintln!("- Pin {} -> {:?}", s.pin(), s.sensor())
+                    }
+                }
+            }
+
+            to_test.clear();
+            to_test = failed;
+
+            tries += 1;
+            if tries > conf.max_sensor_retries() || to_test.is_empty() {
+                break 'big_one;
+            }
+
+            let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(instant.elapsed());
+            if let Some(time) = to_add {
+                std::thread::sleep(time)
             }
         }
+
         let mut img_locs = vec![];
         if can_take_img(now.time()) {
             for cam in cams.iter() {
@@ -163,17 +208,6 @@ fn main() {
 
         bunt::println!("Done reading sensors for {} on {}", now.format("%T"), now.format("%d.%m.%Y"));
 
-        let to_add = Duration::from_secs(conf.min_read_time()).checked_sub(instant.elapsed());
-
-        let to_wait = match to_add {
-            None => Some(Duration::from_secs(conf.read_interval())),
-            Some(t) => Duration::from_secs(conf.read_interval()).checked_add(t),
-        };
-        match to_wait {
-            Some(t) => {
-                std::thread::sleep(t)
-            },
-            _ => {}
-        }
+        std::thread::sleep(Duration::from_secs(conf.read_interval()))
     }
 }
