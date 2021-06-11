@@ -26,7 +26,7 @@ impl Config {
     }
 
     pub fn min_read_time(&self) -> u64 {
-        self.sensors.iter().map(|s| min_update_interval(&s.sensor())).sum()
+        self.sensors.iter().map(|s| super::sensors::min_update_interval(&s.sensor())).sum()
     }
 
     pub fn delimiter(&self) -> u8 {
