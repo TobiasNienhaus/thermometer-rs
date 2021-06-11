@@ -1,6 +1,6 @@
 [package]
 name = "thermometer-rs"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Tobias Nienhaus <me@tobiasnienhaus.me>"]
 edition = "2018"
 publish = false

@@ -76,6 +76,7 @@ fn main() {
     csv.flush().unwrap();
 
     loop {
+        let starting_time = std::time::Instant::now();
         // TODO read all old images and scale them down
         // This way only the newest images are full size
         let now = Local::now();
@@ -211,6 +212,8 @@ fn main() {
 
         bunt::println!("Done reading sensors for {} on {}", now.format("%T"), now.format("%d.%m.%Y"));
 
-        std::thread::sleep(Duration::from_secs(conf.read_interval()))
+        if let Some(time) = Duration::from_secs(conf.read_interval()).checked_sub(starting_time.elapsed()) {
+            std::thread::sleep(time)
+        }
     }
 }
