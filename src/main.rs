@@ -108,6 +108,9 @@ fn main() {
         let mut tries: u64 = 0;
 
         'big_one: loop {
+            if tries > 0 {
+                bunt::println!("Retry #{[yellow]} of {[yellow]} max", tries, conf.max_sensor_retries());
+            }
             let mut failed = Vec::new();
             let instant = std::time::Instant::now();
 
