@@ -1,6 +1,7 @@
 ---
 read_interval: 1
 output_path: ~/Dokumente/Thermometer/data/
+max_sensor_retries: 4
 sensors:
   - sensor: Dht22
     pin: 4
