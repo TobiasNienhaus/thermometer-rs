@@ -15,15 +15,11 @@ use chrono::prelude::*;
 use rascam::SimpleCamera;
 use pathdiff::diff_paths;
 
+use num_format::ToFormattedString;
+
 const DATETIME_FMT: &str = "%F_%H-%M-%S_%z";
 const DATE_FMT: &str = "%F_%z";
 const TIME_FMT: &str = "%H-%M-%S_%z";
-
-fn format_float(loc: &num_format::Locale, num: f32) -> String {
-    let mut buf = num_format::Buffer::new();
-    buf.write_formatted(&num, loc);
-    buf.into_string()
-}
 
 fn main() {
     let path: PathBuf = "/home/pi/Dokumente/thermometer-config.yaml".into();
@@ -34,7 +30,7 @@ fn main() {
     let conf: config::Config = serde_yaml::from_str(config_str.as_str())
         .expect("Could not deserialize config");
 
-    let locale = conf.number_locale();
+    let locale = conf.num_formatter();
 
     let output_path = PathBuf::from_str(conf.output_path()).unwrap();
     if !output_path.exists() {
@@ -143,10 +139,10 @@ fn main() {
                     Ok(o) => {
                         bunt::println!("Reading: t: {[green]} h: {[green]}", o.temperature, o.humidity);
                         if let Some(ele) = readings.get_mut(idx * 2) {
-                            *ele = format_float(&locale, o.temperature);
+                            *ele = locale.format_float(o.temperature, conf.decimal_places());
                         }
                         if let Some(ele) = readings.get_mut(idx * 2 + 1) {
-                            *ele = format_float(&locale, o.humidity);
+                            *ele = locale.format_float(o.humidity, conf.decimal_places());
                         }
                     },
                 }

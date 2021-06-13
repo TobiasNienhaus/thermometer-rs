@@ -3,8 +3,9 @@ use super::sensors;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
-    #[serde(default="default_locale", skip_serializing_if = "Option::is_none")]
-    number_locale: Option<String>,
+    #[serde(default="default_decimal_separator", skip_serializing_if = "Option::is_none")]
+    decimal_separator: Option<String>,
+    decimal_places: usize,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     read_interval: Option<u64>,
     #[serde(default="default_delimiter")]
@@ -22,8 +23,8 @@ fn test_sensor_retries(val: u64) -> bool {
     val == 0
 }
 
-fn default_locale() -> Option<String> {
-    Some("en".to_owned())
+fn default_decimal_separator() -> Option<String> {
+    Some(".".to_owned())
 }
 
 fn default_delimiter() -> char {
@@ -31,12 +32,16 @@ fn default_delimiter() -> char {
 }
 
 impl Config {
-    pub fn number_locale(&self) -> num_format::Locale {
-        if let Some(loc) = &self.number_locale {
-            num_format::Locale::from_name(loc).unwrap_or(num_format::Locale::en)
+    pub fn num_formatter(&self) -> locale::Numeric {
+        if let Some(sep) = &self.decimal_separator {
+            locale::Numeric::new(sep.as_str(), "")
         } else {
-            num_format::Locale::en
+            locale::Numeric::english()
         }
+    }
+
+    pub fn decimal_places(&self) -> usize {
+        self.decimal_places
     }
 
     pub fn sensors(&self) -> &[sensors::Sensor] {
