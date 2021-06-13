@@ -15,8 +15,6 @@ use chrono::prelude::*;
 use rascam::SimpleCamera;
 use pathdiff::diff_paths;
 
-use num_format::ToFormattedString;
-
 const DATETIME_FMT: &str = "%F_%H-%M-%S_%z";
 const DATE_FMT: &str = "%F_%z";
 const TIME_FMT: &str = "%H-%M-%S_%z";
