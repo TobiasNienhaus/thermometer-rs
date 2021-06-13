@@ -19,6 +19,12 @@ const DATETIME_FMT: &str = "%F_%H-%M-%S_%z";
 const DATE_FMT: &str = "%F_%z";
 const TIME_FMT: &str = "%H-%M-%S_%z";
 
+fn format_float(loc: &num_format::Locale, num: f32) -> String {
+    let mut buf = num_format::Buffer::new();
+    buf.write_formatted(&num, loc);
+    buf.into_string()
+}
+
 fn main() {
     let path: PathBuf = "/home/pi/Dokumente/thermometer-config.yaml".into();
     let mut file = OpenOptions::new().read(true).open(path).expect("Could not open config file");
@@ -27,6 +33,8 @@ fn main() {
 
     let conf: config::Config = serde_yaml::from_str(config_str.as_str())
         .expect("Could not deserialize config");
+
+    let locale = conf.number_locale();
 
     let output_path = PathBuf::from_str(conf.output_path()).unwrap();
     if !output_path.exists() {
@@ -135,10 +143,10 @@ fn main() {
                     Ok(o) => {
                         bunt::println!("Reading: t: {[green]} h: {[green]}", o.temperature, o.humidity);
                         if let Some(ele) = readings.get_mut(idx * 2) {
-                            *ele = o.temperature.to_string();
+                            *ele = format_float(&locale, o.temperature);
                         }
                         if let Some(ele) = readings.get_mut(idx * 2 + 1) {
-                            *ele = o.humidity.to_string();
+                            *ele = format_float(&locale, o.humidity);
                         }
                     },
                 }

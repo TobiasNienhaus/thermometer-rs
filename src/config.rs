@@ -3,9 +3,11 @@ use super::sensors;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default="default_locale", skip_serializing_if = "Option::is_none")]
+    number_locale: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     read_interval: Option<u64>,
-    #[serde(default="default_path")]
+    #[serde(default="default_delimiter")]
     delimiter: char,
     #[serde(default="default_sensor_retries")]
     max_sensor_retries: u64,
@@ -20,11 +22,23 @@ fn test_sensor_retries(val: u64) -> bool {
     val == 0
 }
 
-fn default_path() -> char {
+fn default_locale() -> Option<String> {
+    Some("en".to_owned())
+}
+
+fn default_delimiter() -> char {
     return ',';
 }
 
 impl Config {
+    pub fn number_locale(&self) -> num_format::Locale {
+        if let Some(loc) = &self.number_locale {
+            num_format::Locale::from_name(loc).unwrap_or(num_format::Locale::en)
+        } else {
+            num_format::Locale::en
+        }
+    }
+
     pub fn sensors(&self) -> &[sensors::Sensor] {
         self.sensors.as_slice()
     }
